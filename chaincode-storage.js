@@ -60,11 +60,9 @@ module.exports = class StorageChaincode {
   }
 
   async get(stub, args) {
-    if(args.length !== 1) {
-      throw new Error('incorrect number of arguments');
-    }
+    let key = toKey(stub, args);
 
-    return await stub.getState(args[0]);
+    return await stub.getState(key);
   }
 
   async put(stub, args) {
