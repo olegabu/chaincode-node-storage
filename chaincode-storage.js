@@ -105,6 +105,10 @@ module.exports = class StorageChaincode {
 
     await stub.deleteState(key)
   }
+
+  setEvent(stub, name, args) {
+    stub.setEvent(name, Buffer.from(JSON.stringify(args)));
+  }
 };
 
 async function toQueryResult(iter) {
