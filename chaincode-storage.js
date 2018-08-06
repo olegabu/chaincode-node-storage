@@ -55,8 +55,8 @@ module.exports = class StorageChaincode {
       return shim.success(payload);
     } catch (err) {
       logger.error(err);
-      return shim.error(err);
-      // return shim.error(`caught ${err.name} ${err.message}`);
+      // return shim.error(err);
+      return shim.error(`caught ${err.name} ${err.message}`);
     }
   }
 
