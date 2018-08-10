@@ -119,7 +119,11 @@ module.exports = class StorageChaincode {
   }
 
   setEvent(stub, name, args) {
-    stub.setEvent(name, Buffer.from(JSON.stringify(args)));
+    let eventArgs = Buffer.from(JSON.stringify(args));
+
+    logger.debug('setEvent name=%s args=%j eventArgs=%j', name, args, eventArgs);
+
+    stub.setEvent(name, eventArgs);
   }
 };
 
