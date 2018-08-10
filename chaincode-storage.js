@@ -107,6 +107,17 @@ module.exports = class StorageChaincode {
     await stub.deleteState(key)
   }
 
+  async invokeChaincode(stub, chaincode, args, channel) {
+    let invokeArgs = [];
+    args.forEach(a => {
+      invokeArgs.push(Buffer.from(a));
+    });
+
+    logger.debug('invokeChaincode chaincode=%s channel=%s args=%j invokeArgs=%j', chaincode, channel, args, invokeArgs);
+
+    return stub.invokeChaincode(chaincode, invokeArgs, channel);
+  }
+
   setEvent(stub, name, args) {
     stub.setEvent(name, Buffer.from(JSON.stringify(args)));
   }
