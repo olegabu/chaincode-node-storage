@@ -63,11 +63,15 @@ module.exports = class StorageChaincode {
   async get(stub, args) {
     let key = toKey(stub, args);
 
+    logger.debug('get args=%j key=%s', args, key);
+
     return await stub.getState(key);
   }
 
   async put(stub, args) {
     let req = toKeyValue(stub, args);
+
+    logger.debug('put args=%j key=%s', args, req.key);
 
     await stub.putState(req.key, Buffer.from(req.value));
   }
@@ -103,6 +107,8 @@ module.exports = class StorageChaincode {
 
   async delete(stub, args) {
     let key = toKey(stub, args);
+
+    logger.debug('delete args=%j key=%s', args, key);
 
     await stub.deleteState(key)
   }
