@@ -59,7 +59,7 @@ module.exports = class StorageChaincode {
         ret = await this.range(req.params);
       }*/
 
-      if(!Buffer.isBuffer(ret)) {
+      if(ret && !Buffer.isBuffer(ret)) {
         ret = Buffer.from(ret);
       }
 
@@ -164,6 +164,10 @@ module.exports = class StorageChaincode {
         return Buffer.from(JSON.stringify(ret));
       }
     }
+  }
+
+  ping() {
+    return 'pong';
   }
 
   toKey(stub, args) {
