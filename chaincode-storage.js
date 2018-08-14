@@ -1,6 +1,8 @@
 const shim = require('fabric-shim');
 const ClientIdentity = require('fabric-shim').ClientIdentity;
 
+const logger = shim.newLogger('StorageChaincode');
+
 module.exports = class StorageChaincode {
   constructor() {
     this.logger = shim.newLogger(this.constructor.name);
@@ -10,7 +12,7 @@ module.exports = class StorageChaincode {
     this.stub = stub;
 
     let req = stub.getFunctionAndParameters();
-    this.logger.info("Init on %s with %j", stub.getChannelID(), req);
+    logger.info("Init on %s with %j", stub.getChannelID(), req);
     return shim.success(Buffer.from(''));
   }
 
@@ -22,13 +24,13 @@ module.exports = class StorageChaincode {
 
     // use either methods to get transaction creator org and identity
     let cid = new ClientIdentity(stub);
-    // this.logger.info("by %s %s %j", cid.mspId, cid.id, cid.cert);
+    // logger.info("by %s %s %j", cid.mspId, cid.id, cid.cert);
     // let creator = stub.getCreator();
-    // this.logger.info("by %s", creator.mspid);
+    // logger.info("by %s", creator.mspid);
     this.creator = cid;
     this.creator.org = cid.mspId.split('MSP')[0];
 
-    this.logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
+    logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
 
     /*let method = this[req.fcn];
     if (!method) {
@@ -42,24 +44,24 @@ module.exports = class StorageChaincode {
 
       let ret;
       if(req.fcn === 'put') {
-        ret = await this.put(stub, req.params);
+        ret = await this.put(req.params);
       }
       else if(req.fcn === 'get') {
-        ret = await this.get(stub, req.params);
+        ret = await this.get(req.params);
       }
       else if(req.fcn === 'delete') {
-        ret = await this.delete(stub, req.params);
+        ret = await this.delete(req.params);
       }
       else if(req.fcn === 'list') {
-        ret = await this.list(stub, req.params);
+        ret = await this.list(req.params);
       }
       else if(req.fcn === 'range') {
-        ret = await this.range(stub, req.params);
+        ret = await this.range(req.params);
       }
 
       return shim.success(ret);
     } catch (err) {
-      this.logger.error(err);
+      logger.error(err);
       return shim.error(err);
     }
   }
@@ -67,7 +69,7 @@ module.exports = class StorageChaincode {
   async get(args) {
     let key = toKey(this.stub, args);
 
-    this.logger.debug('get args=%j key=%s', args, key);
+    logger.debug('get args=%j key=%s', args, key);
 
     return await this.stub.getState(key);
   }
@@ -75,7 +77,7 @@ module.exports = class StorageChaincode {
   async put(args) {
     let req = toKeyValue(this.stub, args);
 
-    this.logger.debug('put args=%j key=%s', args, req.key);
+    logger.debug('put args=%j key=%s', args, req.key);
 
     await this.stub.putState(req.key, Buffer.from(req.value));
   }
@@ -102,7 +104,7 @@ module.exports = class StorageChaincode {
     let objectType = args[0];
     let attributes = args.slice(1);
 
-    this.logger.debug('list args=%j objectType=%j, attributes=%j', args, objectType, attributes);
+    logger.debug('list args=%j objectType=%j, attributes=%j', args, objectType, attributes);
 
     let iter = await this.stub.getStateByPartialCompositeKey(objectType, attributes);
 
@@ -112,7 +114,7 @@ module.exports = class StorageChaincode {
   async delete(args) {
     let key = toKey(this.stub, args);
 
-    this.logger.debug('delete args=%j key=%s', args, key);
+    logger.debug('delete args=%j key=%s', args, key);
 
     await stub.deleteState(key)
   }
@@ -123,7 +125,7 @@ module.exports = class StorageChaincode {
       invokeArgs.push(Buffer.from(a));
     });
 
-    this.logger.debug('invokeChaincode chaincode=%s channel=%s args=%j invokeArgs=%j', chaincode, channel, args, invokeArgs);
+    logger.debug('invokeChaincode chaincode=%s channel=%s args=%j invokeArgs=%j', chaincode, channel, args, invokeArgs);
 
     return this.stub.invokeChaincode(chaincode, invokeArgs, channel);
   }
@@ -131,7 +133,7 @@ module.exports = class StorageChaincode {
   setEvent(name, args) {
     let eventArgs = Buffer.from(JSON.stringify(args));
 
-    this.logger.debug('setEvent name=%s args=%j eventArgs=%j', name, args, eventArgs);
+    logger.debug('setEvent name=%s args=%j eventArgs=%j', name, args, eventArgs);
 
     this.stub.setEvent(name, eventArgs);
   }
