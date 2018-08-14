@@ -25,24 +25,24 @@ module.exports = class StorageChaincode {
     // use either methods to get transaction creator org and identity
     let cid = new ClientIdentity(stub);
     // logger.info("by %s %s %j", cid.mspId, cid.id, cid.cert);
-    // let creator = stub.getCreator();
-    // logger.info("by %s", creator.mspid);
+    // this.creator = stub.getCreator();
+    // logger.info("by %s", this.creator.mspid);
     this.creator = cid;
     this.creator.org = cid.mspId.split('MSP')[0];
 
     logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
 
-    /*let method = this[req.fcn];
+    let method = this[req.fcn];
     if (!method) {
-      return shim.error(Buffer.from(`no method found of name: ${req.fcn}`));
+      return shim.error(`no method found of name: ${req.fcn}`);
     }
 
-    method = method.bind(this);*/
+    method = method.bind(this);
 
     try {
-      // let payload = await method(stub, req.params);
+      let ret = await method(stub, req.params);
 
-      let ret;
+      /*let ret;
       if(req.fcn === 'put') {
         ret = await this.put(req.params);
       }
@@ -57,7 +57,7 @@ module.exports = class StorageChaincode {
       }
       else if(req.fcn === 'range') {
         ret = await this.range(req.params);
-      }
+      }*/
 
       return shim.success(ret);
     } catch (err) {
