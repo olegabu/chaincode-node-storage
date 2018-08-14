@@ -42,23 +42,6 @@ module.exports = class StorageChaincode {
     try {
       let ret = await method(req.params);
 
-      /*let ret;
-      if(req.fcn === 'put') {
-        ret = await this.put(req.params);
-      }
-      else if(req.fcn === 'get') {
-        ret = await this.get(req.params);
-      }
-      else if(req.fcn === 'delete') {
-        ret = await this.delete(req.params);
-      }
-      else if(req.fcn === 'list') {
-        ret = await this.list(req.params);
-      }
-      else if(req.fcn === 'range') {
-        ret = await this.range(req.params);
-      }*/
-
       if(ret && !Buffer.isBuffer(ret)) {
         ret = Buffer.from(ret);
       }
@@ -81,7 +64,8 @@ module.exports = class StorageChaincode {
   async put(args) {
     let req = this.toKeyValue(this.stub, args);
 
-    logger.debug('put args=%j key=%s', args, req.key);
+    logger.debug('put key=%s', req.key);
+    // logger.debug('put args=%j key=%s', args, req.key);
 
     await this.stub.putState(req.key, Buffer.from(req.value));
   }
