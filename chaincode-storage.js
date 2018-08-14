@@ -40,7 +40,7 @@ module.exports = class StorageChaincode {
     method = method.bind(this);
 
     try {
-      let ret = await method(stub, req.params);
+      let ret = await method(req.params);
 
       /*let ret;
       if(req.fcn === 'put') {
