@@ -1,29 +1,34 @@
 const shim = require('fabric-shim');
 const ClientIdentity = require('fabric-shim').ClientIdentity;
 
-const logger = shim.newLogger('StorageChaincode');
-
 module.exports = class StorageChaincode {
+  constructor() {
+    this.logger = shim.newLogger(this.constructor.name);
+  }
 
   async Init(stub) {
+    this.stub = stub;
+
     let req = stub.getFunctionAndParameters();
-    logger.info("Init on %s with %j", stub.getChannelID(), req);
+    this.logger.info("Init on %s with %j", stub.getChannelID(), req);
     return shim.success(Buffer.from(''));
   }
 
   async Invoke(stub) {
+    this.stub = stub;
+
     let req = stub.getFunctionAndParameters();
     this.channel = stub.getChannelID();
 
     // use either methods to get transaction creator org and identity
     let cid = new ClientIdentity(stub);
-    // logger.info("by %s %s %j", cid.mspId, cid.id, cid.cert);
+    // this.logger.info("by %s %s %j", cid.mspId, cid.id, cid.cert);
     // let creator = stub.getCreator();
-    // logger.info("by %s", creator.mspid);
+    // this.logger.info("by %s", creator.mspid);
     this.creator = cid;
     this.creator.org = cid.mspId.split('MSP')[0];
 
-    logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
+    this.logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
 
     /*let method = this[req.fcn];
     if (!method) {
@@ -35,48 +40,47 @@ module.exports = class StorageChaincode {
     try {
       // let payload = await method(stub, req.params);
 
-      let payload;
+      let ret;
       if(req.fcn === 'put') {
-        payload = await this.put(stub, req.params);
+        ret = await this.put(stub, req.params);
       }
       else if(req.fcn === 'get') {
-        payload = await this.get(stub, req.params);
+        ret = await this.get(stub, req.params);
       }
       else if(req.fcn === 'delete') {
-        payload = await this.delete(stub, req.params);
+        ret = await this.delete(stub, req.params);
       }
       else if(req.fcn === 'list') {
-        payload = await this.list(stub, req.params);
+        ret = await this.list(stub, req.params);
       }
       else if(req.fcn === 'range') {
-        payload = await this.range(stub, req.params);
+        ret = await this.range(stub, req.params);
       }
 
-      return shim.success(payload);
+      return shim.success(ret);
     } catch (err) {
-      logger.error(err);
-      // return shim.error(err);
-      return shim.error(`caught ${err.name} ${err.message}`);
+      this.logger.error(err);
+      return shim.error(err);
     }
   }
 
-  async get(stub, args) {
-    let key = toKey(stub, args);
+  async get(args) {
+    let key = toKey(this.stub, args);
 
-    logger.debug('get args=%j key=%s', args, key);
+    this.logger.debug('get args=%j key=%s', args, key);
 
-    return await stub.getState(key);
+    return await this.stub.getState(key);
   }
 
-  async put(stub, args) {
-    let req = toKeyValue(stub, args);
+  async put(args) {
+    let req = toKeyValue(this.stub, args);
 
-    logger.debug('put args=%j key=%s', args, req.key);
+    this.logger.debug('put args=%j key=%s', args, req.key);
 
-    await stub.putState(req.key, Buffer.from(req.value));
+    await this.stub.putState(req.key, Buffer.from(req.value));
   }
 
-  async range(stub, args) {
+  async range(args) {
     let startKey = '', endKey = '';
     if(args.length > 0){
       startKey = args[0];
@@ -85,12 +89,12 @@ module.exports = class StorageChaincode {
       endKey = args[1];
     }
 
-    let iter = await stub.getStateByRange(startKey, endKey);
+    let iter = await this.stub.getStateByRange(startKey, endKey);
 
     return await toQueryResult(iter);
   }
 
-  async list(stub, args) {
+  async list(args) {
     if(args.length < 1) {
       throw new Error('incorrect number of arguments, objectType is required');
     }
@@ -98,38 +102,38 @@ module.exports = class StorageChaincode {
     let objectType = args[0];
     let attributes = args.slice(1);
 
-    logger.debug('list args=%j objectType=%j, attributes=%j', args, objectType, attributes);
+    this.logger.debug('list args=%j objectType=%j, attributes=%j', args, objectType, attributes);
 
-    let iter = await stub.getStateByPartialCompositeKey(objectType, attributes);
+    let iter = await this.stub.getStateByPartialCompositeKey(objectType, attributes);
 
     return await toQueryResult(iter);
   }
 
-  async delete(stub, args) {
-    let key = toKey(stub, args);
+  async delete(args) {
+    let key = toKey(this.stub, args);
 
-    logger.debug('delete args=%j key=%s', args, key);
+    this.logger.debug('delete args=%j key=%s', args, key);
 
     await stub.deleteState(key)
   }
 
-  async invokeChaincode(stub, chaincode, args, channel) {
+  async invokeChaincode(chaincode, args, channel) {
     let invokeArgs = [];
     args.forEach(a => {
       invokeArgs.push(Buffer.from(a));
     });
 
-    logger.debug('invokeChaincode chaincode=%s channel=%s args=%j invokeArgs=%j', chaincode, channel, args, invokeArgs);
+    this.logger.debug('invokeChaincode chaincode=%s channel=%s args=%j invokeArgs=%j', chaincode, channel, args, invokeArgs);
 
-    return stub.invokeChaincode(chaincode, invokeArgs, channel);
+    return this.stub.invokeChaincode(chaincode, invokeArgs, channel);
   }
 
-  setEvent(stub, name, args) {
+  setEvent(name, args) {
     let eventArgs = Buffer.from(JSON.stringify(args));
 
-    logger.debug('setEvent name=%s args=%j eventArgs=%j', name, args, eventArgs);
+    this.logger.debug('setEvent name=%s args=%j eventArgs=%j', name, args, eventArgs);
 
-    stub.setEvent(name, eventArgs);
+    this.stub.setEvent(name, eventArgs);
   }
 };
 
