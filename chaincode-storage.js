@@ -116,7 +116,7 @@ module.exports = class StorageChaincode {
 
     logger.debug('delete args=%j key=%s', args, key);
 
-    await stub.deleteState(key)
+    await this.stub.deleteState(key)
   }
 
   async invokeChaincode(chaincode, args, channel) {
