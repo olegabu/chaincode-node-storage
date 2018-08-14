@@ -59,6 +59,10 @@ module.exports = class StorageChaincode {
         ret = await this.range(req.params);
       }*/
 
+      if(!Buffer.isBuffer(ret)) {
+        ret = Buffer.from(ret);
+      }
+
       return shim.success(ret);
     } catch (err) {
       logger.error(err);
