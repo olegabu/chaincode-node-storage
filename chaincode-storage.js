@@ -67,7 +67,7 @@ module.exports = class StorageChaincode {
   }
 
   async get(args) {
-    let key = toKey(this.stub, args);
+    let key = this.toKey(this.stub, args);
 
     logger.debug('get args=%j key=%s', args, key);
 
@@ -75,7 +75,7 @@ module.exports = class StorageChaincode {
   }
 
   async put(args) {
-    let req = toKeyValue(this.stub, args);
+    let req = this.toKeyValue(this.stub, args);
 
     logger.debug('put args=%j key=%s', args, req.key);
 
@@ -93,7 +93,7 @@ module.exports = class StorageChaincode {
 
     let iter = await this.stub.getStateByRange(startKey, endKey);
 
-    return await toQueryResult(iter);
+    return await this.toQueryResult(iter);
   }
 
   async list(args) {
@@ -108,11 +108,11 @@ module.exports = class StorageChaincode {
 
     let iter = await this.stub.getStateByPartialCompositeKey(objectType, attributes);
 
-    return await toQueryResult(iter);
+    return await this.toQueryResult(iter);
   }
 
   async delete(args) {
-    let key = toKey(this.stub, args);
+    let key = this.toKey(this.stub, args);
 
     logger.debug('delete args=%j key=%s', args, key);
 
@@ -137,66 +137,67 @@ module.exports = class StorageChaincode {
 
     this.stub.setEvent(name, eventArgs);
   }
+
+  async toQueryResult(iter) {
+    let ret = [];
+    while(true) {
+      let res = await iter.next();
+
+      if(res.value && res.value.value.toString()) {
+        let jsonRes = {};
+
+        jsonRes.key = res.value.key;
+        try {
+          jsonRes.value = JSON.parse(res.value.value.toString('utf8'));
+        } catch (err) {
+          jsonRes.value = res.value.value.toString('utf8');
+        }
+        ret.push(jsonRes);
+      }
+
+      if(res.done) {
+        await iter.close();
+        return Buffer.from(JSON.stringify(ret));
+      }
+    }
+  }
+
+  toKey(stub, args) {
+    let k;
+    if(args.length < 1) {
+      throw new Error('incorrect number of arguments, key is required');
+    }
+    else if(args.length === 1) {
+      k = args[0];
+    }
+    else if(args.length > 1) {
+      let objectType = args[0];
+      let attributes = args.slice(1);
+
+      k = stub.createCompositeKey(objectType, attributes);
+    }
+
+    return k;
+  }
+
+  toKeyValue(stub, args) {
+    let k, v;
+    if(args.length < 2) {
+      throw new Error('incorrect number of arguments, key and value are required');
+    }
+    else if(args.length === 2) {
+      k = args[0];
+      v = args[1];
+    }
+    else if(args.length > 2) {
+      let objectType = args[0];
+      let attributes = args.slice(1, args.length-1);
+
+      k = stub.createCompositeKey(objectType, attributes);
+      v = args[args.length-1];
+    }
+
+    return {key: k, value: v};
+  }
 };
 
-async function toQueryResult(iter) {
-  let ret = [];
-  while(true) {
-    let res = await iter.next();
-
-    if(res.value && res.value.value.toString()) {
-      let jsonRes = {};
-
-      jsonRes.key = res.value.key;
-      try {
-        jsonRes.value = JSON.parse(res.value.value.toString('utf8'));
-      } catch (err) {
-        jsonRes.value = res.value.value.toString('utf8');
-      }
-      ret.push(jsonRes);
-    }
-
-    if(res.done) {
-      await iter.close();
-      return Buffer.from(JSON.stringify(ret));
-    }
-  }
-}
-
-function toKey(stub, args) {
-  let k;
-  if(args.length < 1) {
-    throw new Error('incorrect number of arguments, key is required');
-  }
-  else if(args.length === 1) {
-    k = args[0];
-  }
-  else if(args.length > 1) {
-    let objectType = args[0];
-    let attributes = args.slice(1);
-
-    k = stub.createCompositeKey(objectType, attributes);
-  }
-
-  return k;
-}
-
-function toKeyValue(stub, args) {
-  let k, v;
-  if(args.length < 2) {
-    throw new Error('incorrect number of arguments, key and value are required');
-  }
-  else if(args.length === 2) {
-    k = args[0];
-    v = args[1];
-  }
-  else if(args.length > 2) {
-    let objectType = args[0];
-    let attributes = args.slice(1, args.length-1);
-
-    k = stub.createCompositeKey(objectType, attributes);
-    v = args[args.length-1];
-  }
-
-  return {key: k, value: v};
-}
