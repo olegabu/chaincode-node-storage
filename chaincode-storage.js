@@ -40,7 +40,7 @@ module.exports = class StorageChaincode {
     method = method.bind(this);
 
     try {
-      let ret = method(req.params);
+      let ret = await method(req.params);
 
       if(ret && !Buffer.isBuffer(ret)) {
         logger.debug(`not buffer ret=${ret}`);
