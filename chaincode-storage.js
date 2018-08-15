@@ -40,7 +40,7 @@ module.exports = class StorageChaincode {
     method = method.bind(this);
 
     try {
-      let ret = await method(req.params);
+      let ret = method(req.params);
 
       if(ret && !Buffer.isBuffer(ret)) {
         ret = Buffer.from(ret);
