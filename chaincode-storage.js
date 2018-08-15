@@ -43,6 +43,7 @@ module.exports = class StorageChaincode {
       let ret = method(req.params);
 
       if(ret && !Buffer.isBuffer(ret)) {
+        logger.debug(`not buffer ret=${ret}`);
         ret = Buffer.from(ret);
       }
 
