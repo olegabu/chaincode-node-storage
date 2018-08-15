@@ -68,7 +68,7 @@ module.exports = class StorageChaincode {
     logger.debug('put key=%s', req.key);
     // logger.debug('put args=%j key=%s', args, req.key);
 
-    return await this.stub.putState(req.key, Buffer.from(req.value));
+    await this.stub.putState(req.key, Buffer.from(req.value));
   }
 
   async range(args) {
