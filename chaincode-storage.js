@@ -32,22 +32,22 @@ module.exports = class StorageChaincode {
 
     logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
 
-    /*let method = this[req.fcn];
+    let method = this[req.fcn];
     if (!method) {
       return shim.error(`no method found of name: ${req.fcn}`);
     }
 
-    method = method.bind(this);*/
+    method = method.bind(this);
 
     try {
-      /*let ret = await method(req.params);
+      let ret = await method(req.params);
 
       if(ret && !Buffer.isBuffer(ret)) {
         logger.debug(`not buffer ret=${ret}`);
         ret = Buffer.from(ret);
-      }*/
+      }
 
-      let ret;
+      /*let ret;
       if(req.fcn === 'put') {
         ret = await this.put(req.params);
       }
@@ -62,7 +62,7 @@ module.exports = class StorageChaincode {
       }
       else if(req.fcn === 'range') {
         ret = await this.range(req.params);
-      }
+      }*/
 
       return shim.success(ret);
     } catch (err) {
