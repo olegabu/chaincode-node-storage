@@ -32,19 +32,36 @@ module.exports = class StorageChaincode {
 
     logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
 
-    let method = this[req.fcn];
+    /*let method = this[req.fcn];
     if (!method) {
       return shim.error(`no method found of name: ${req.fcn}`);
     }
 
-    method = method.bind(this);
+    method = method.bind(this);*/
 
     try {
-      let ret = await method(req.params);
+      /*let ret = await method(req.params);
 
       if(ret && !Buffer.isBuffer(ret)) {
         logger.debug(`not buffer ret=${ret}`);
         ret = Buffer.from(ret);
+      }*/
+
+      let ret;
+      if(req.fcn === 'put') {
+        ret = await this.put(stub, req.params);
+      }
+      else if(req.fcn === 'get') {
+        ret = await this.get(stub, req.params);
+      }
+      else if(req.fcn === 'delete') {
+        ret = await this.delete(stub, req.params);
+      }
+      else if(req.fcn === 'list') {
+        ret = await this.list(stub, req.params);
+      }
+      else if(req.fcn === 'range') {
+        ret = await this.range(stub, req.params);
       }
 
       return shim.success(ret);
