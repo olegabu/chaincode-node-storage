@@ -49,19 +49,19 @@ module.exports = class StorageChaincode {
 
       let ret;
       if(req.fcn === 'put') {
-        ret = await this.put(stub, req.params);
+        ret = await this.put(req.params);
       }
       else if(req.fcn === 'get') {
-        ret = await this.get(stub, req.params);
+        ret = await this.get(req.params);
       }
       else if(req.fcn === 'delete') {
-        ret = await this.delete(stub, req.params);
+        ret = await this.delete(req.params);
       }
       else if(req.fcn === 'list') {
-        ret = await this.list(stub, req.params);
+        ret = await this.list(req.params);
       }
       else if(req.fcn === 'range') {
-        ret = await this.range(stub, req.params);
+        ret = await this.range(req.params);
       }
 
       return shim.success(ret);
