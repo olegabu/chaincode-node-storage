@@ -23,14 +23,16 @@ module.exports = class StorageChaincode {
     this.channel = stub.getChannelID();
 
     // use either methods to get transaction creator org and identity
-    let cid = new ClientIdentity(stub);
+    // let cid = new ClientIdentity(stub);
     // logger.info("by %s %s %j", cid.mspId, cid.id, cid.cert);
     // this.creator = stub.getCreator();
     // logger.info("by %s", this.creator.mspid);
-    this.creator = cid;
-    this.creator.org = cid.mspId.split('MSP')[0];
+    // this.creator = cid;
+    // this.creator.org = cid.mspId.split('MSP')[0];
 
-    logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
+    // logger.info("Invoke on %s by %s with %j", this.channel, this.creator.org, req);
+
+    logger.info("Invoke on %s with %j", this.channel, req);
 
     let method = this[req.fcn];
     if (!method) {
@@ -46,23 +48,6 @@ module.exports = class StorageChaincode {
         logger.debug(`not buffer ret=${ret}`);
         ret = Buffer.from(ret);
       }
-
-      /*let ret;
-      if(req.fcn === 'put') {
-        ret = await this.put(req.params);
-      }
-      else if(req.fcn === 'get') {
-        ret = await this.get(req.params);
-      }
-      else if(req.fcn === 'delete') {
-        ret = await this.delete(req.params);
-      }
-      else if(req.fcn === 'list') {
-        ret = await this.list(req.params);
-      }
-      else if(req.fcn === 'range') {
-        ret = await this.range(req.params);
-      }*/
 
       return shim.success(ret);
     } catch (err) {
